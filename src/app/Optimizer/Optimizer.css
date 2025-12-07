@@ -1,0 +1,22 @@
+/* Optimizer.css */
+.optimizer-card {
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    height: 100%;
+}
+
+.optimizer-list-scrollable {
+    max-height: 150px;
+    overflow-y: auto;
+    font-size: 0.9em;
+}
+
+.optimizer-status-healthy {
+    color: var(--pf-global--success-color--100);
+    font-weight: bold;
+}
+
+.optimizer-status-unhealthy {
+    color: var(--pf-global--danger-color--100);
+    font-weight: bold;
+}

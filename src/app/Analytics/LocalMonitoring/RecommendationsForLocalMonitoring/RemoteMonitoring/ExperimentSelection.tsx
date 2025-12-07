@@ -24,8 +24,10 @@ import {
 import { SyncAltIcon } from '@patternfly/react-icons';
 
 
-const ExperimentSelection = (props: { endTimeArray; setEndTimeArray; SREdata; setSREdata; setDisplayRecc; notification; setNotification }) => {
+import { useLocation } from 'react-router-dom';
 
+const ExperimentSelection = (props: { endTimeArray; setEndTimeArray; SREdata; setSREdata; setDisplayRecc; notification; setNotification }) => {
+  const location = useLocation();
   const list_experiment_url: string = getListExperimentsURL();
   const [value, setValue] = useState('');
   const [expName, setExpName] = useState<any | null>('');
@@ -39,7 +41,7 @@ const ExperimentSelection = (props: { endTimeArray; setEndTimeArray; SREdata; se
     error: 'danger',
     critical: 'danger',
   };
-  
+
   const fetchData = async () => {
     const response = await fetch(list_experiment_url);
     const data = await response.json();
@@ -53,6 +55,17 @@ const ExperimentSelection = (props: { endTimeArray; setEndTimeArray; SREdata; se
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const experimentNameParam = params.get('experiment_name');
+
+    if (experimentNameParam && expData && expData.length > 0) {
+      if (expData.includes(experimentNameParam) && expName !== experimentNameParam) {
+        onChangeExpName(experimentNameParam);
+      }
+    }
+  }, [expData, location.search]);
 
   const onChangeExpName = async (value: string) => {
     setValue('');
@@ -108,10 +121,10 @@ const ExperimentSelection = (props: { endTimeArray; setEndTimeArray; SREdata; se
         endtime = [...Object.keys(data[0].kubernetes_objects[0].namespaces.recommendations.data).sort().reverse()];
         initialNotifications = data[0].kubernetes_objects[0].namespaces.recommendations.notifications || [];
       }
-      
+
 
       props.setEndTimeArray(endtime);
-    
+
       props.setNotification({
         level1: initialNotifications
       });
@@ -131,9 +144,9 @@ const ExperimentSelection = (props: { endTimeArray; setEndTimeArray; SREdata; se
         experiment_type: experiment_type
       });
     }
-      catch {
-        console.log("Execution incompleted.");
-      }
+    catch {
+      console.log("Execution incompleted.");
+    }
   };
 
   const handleGenerateRecommendationClick = async (expName) => {
@@ -159,9 +172,9 @@ const ExperimentSelection = (props: { endTimeArray; setEndTimeArray; SREdata; se
     <>
       <br />
       {showFailureAlert &&
-        <Alert variant="warning" title="Unable to Generate Reccommendations" ouiaId="FailureAlert" /> }
-        {
-          showReccSuccessAlert &&
+        <Alert variant="warning" title="Unable to Generate Reccommendations" ouiaId="FailureAlert" />}
+      {
+        showReccSuccessAlert &&
         <Alert variant="success" title="Generating Reccommendations" />
       }
       <Flex direction={{ default: 'column' }}>

@@ -9,6 +9,7 @@ import { ClusterGroupTables } from './Analytics/LocalMonitoring/ClusterGroupTabl
 import { CreateExperiment } from './Analytics/LocalMonitoring/CreateExperiment';
 import { Monitoring } from './Analytics/LocalMonitoring/RecommendationsForLocalMonitoring/RemoteMonitoring/Monitoring';
 import { CreateBulkExperiment } from './Analytics/LocalMonitoring/CreateBulkExperiment';
+import { Optimizer } from '@app/Optimizer/Optimizer';
 import { useEffect, useState } from 'react';
 
 let routeFocusTimer: number;
@@ -97,6 +98,14 @@ const routes: AppRouteConfig[] = [
     ],
     menu: false
   },
+  ...(process.env.OPTIMIZER === 'true' ? [{
+    component: Optimizer,
+    exact: true,
+    label: 'Optimizer',
+    path: '/optimizer',
+    title: 'Kruize Optimizer',
+    menu: true
+  }] : [])
 ];
 
 

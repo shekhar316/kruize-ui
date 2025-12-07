@@ -24,27 +24,27 @@ const getDatasourcesURL = () => {
 }
 
 const importDataSourcesMetadataURL = () => {
-    return getBaseUrl() + '/dsmetadata'; 
+    return getBaseUrl() + '/dsmetadata';
 }
 
-const importCreateExperimentJsonURL = () =>{
+const importCreateExperimentJsonURL = () => {
     return getBaseUrl() + '/createExperiment';
 }
 
-const importCreateBulkExperimentJsonURL = () =>{
+const importCreateBulkExperimentJsonURL = () => {
     return getBaseUrl() + '/bulk';
 }
 
-const generateRecommendationsURL = (exp_name : string) =>{
+const generateRecommendationsURL = (exp_name: string) => {
     return getBaseUrl() + '/generateRecommendations?experiment_name=' + exp_name;
 }
 
-const getDatasourceMetadataURL = (datasource_name : string) => {
+const getDatasourceMetadataURL = (datasource_name: string) => {
     return getBaseUrl() + '/dsmetadata?datasource=' + datasource_name + '&verbose=false'
 }
 
-const getClusterMetadataURL = (datasource_name : string, cluster_name : string) => {
-    return getBaseUrl() + '/dsmetadata?datasource=' + datasource_name + '&cluster_name=' + cluster_name +  '&verbose=true' 
+const getClusterMetadataURL = (datasource_name: string, cluster_name: string) => {
+    return getBaseUrl() + '/dsmetadata?datasource=' + datasource_name + '&cluster_name=' + cluster_name + '&verbose=true'
 }
 
 const getRecommendationsURLWithParams = (experiment_name: string, latest: string) => {
@@ -79,5 +79,15 @@ const getPort = () => {
     }
 }
 
-export { getRecommendationsURLWithParams, getListExperimentsURL, getHostname, getPort, getRecommendationsURL, getDatasourcesURL, importCreateBulkExperimentJsonURL,
-    importDataSourcesMetadataURL, generateRecommendationsURL ,getListExperimentsURLWithParams, getDatasourceMetadataURL, getClusterMetadataURL, importCreateExperimentJsonURL};
+const getOptimizerUrl = () => {
+    if (isProduction) {
+        return `${window.location.protocol}//${process.env.CLUSTER_IP}:${process.env.OPTIMIZER_PORT}`;
+    } else {
+        return "/optimizer-api";
+    }
+}
+
+export {
+    getRecommendationsURLWithParams, getListExperimentsURL, getHostname, getPort, getRecommendationsURL, getDatasourcesURL, importCreateBulkExperimentJsonURL,
+    importDataSourcesMetadataURL, generateRecommendationsURL, getListExperimentsURLWithParams, getDatasourceMetadataURL, getClusterMetadataURL, importCreateExperimentJsonURL, getOptimizerUrl
+};
