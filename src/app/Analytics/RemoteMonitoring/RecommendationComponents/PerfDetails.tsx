@@ -21,20 +21,26 @@ const PerfDetails = (props: { recommendedData; currentData; chartData; day; endt
 
   const UnitFormat = (unit) => unit || '';
 
-  const current_code = `resources: 
-  requests: 
+  const current_code = `resources:
+  requests:
     memory: "${NumberFormat(props.currentData[0]?.requests?.memory?.amount)}${UnitFormat(
     props.currentData[0]?.requests?.memory?.format
-  )}" 
-    cpu: "${NumberFormat(props.currentData[0]?.requests?.cpu?.amount)}" 
-  limits: 
+  )}"
+    cpu: "${NumberFormat(props.currentData[0]?.requests?.cpu?.amount)}"
+  limits:
     memory: "${NumberFormat(props.currentData[0]?.limits?.memory?.amount)}${UnitFormat(
     props.currentData[0]?.limits?.memory?.format
-  )}" 
+  )}"
     cpu: "${NumberFormat(props.currentData[0]?.limits?.cpu?.amount)}"`;
 
-  const recommended_code = `resources: 
-  requests: 
+  // Format env parameters if they exist
+  const envParams = props.recommendedData[0]?.recommendation_engines?.performance?.config?.env;
+  const envSection = envParams?.length > 0
+    ? '\nenv:\n' + envParams.map(e => `  - name: ${e.name}\n    value: "${e.value}"`).join('\n')
+    : '';
+
+  const recommended_code = `resources:
+  requests:
     memory: "${NumberFormat(
       props.recommendedData[0]?.recommendation_engines?.performance?.config?.requests?.memory?.amount
     )}${UnitFormat(
@@ -47,19 +53,19 @@ const PerfDetails = (props: { recommendedData; currentData; chartData; day; endt
     )}"            # ${addPlusSign(
     NumberFormat(props.recommendedData[0]?.recommendation_engines?.performance?.variation?.requests?.cpu?.amount)
   )}
-  limits: 
+  limits:
     memory: "${NumberFormat(
       props.recommendedData[0]?.recommendation_engines?.performance?.config?.limits?.memory?.amount
     )}${UnitFormat(
     props.recommendedData[0]?.recommendation_engines?.performance?.config?.limits?.memory?.format
   )}"    # ${addPlusSign(
     NumberFormat(props.recommendedData[0]?.recommendation_engines?.performance?.variation?.limits?.memory?.amount)
-  )}${UnitFormat(props.recommendedData[0]?.recommendation_engines?.performance?.variation?.limits?.memory?.format)}   
+  )}${UnitFormat(props.recommendedData[0]?.recommendation_engines?.performance?.variation?.limits?.memory?.format)}
     cpu: "${NumberFormat(
       props.recommendedData[0]?.recommendation_engines?.performance?.config?.limits?.cpu?.amount
     )}"            # ${addPlusSign(
     NumberFormat(props.recommendedData[0]?.recommendation_engines?.performance?.variation?.limits?.cpu?.amount)
-  )}`;
+  )}${envSection}`;
 
   return (
     <PageSection variant={PageSectionVariants.light}>
