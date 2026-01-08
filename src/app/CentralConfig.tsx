@@ -80,11 +80,7 @@ const getPort = () => {
 }
 
 const getOptimizerUrl = () => {
-    if (isProduction) {
-        return `${window.location.protocol}//${process.env.CLUSTER_IP}:${process.env.OPTIMIZER_PORT}`;
-    } else {
-        return "/optimizer-api";
-    }
+    return "/optimizer-api";
 }
 
 export {

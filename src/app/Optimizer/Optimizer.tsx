@@ -52,8 +52,7 @@ interface HealthStatus {
     datasources: string[];
     metadata_profiles: { name: string; profile_version: string }[];
     metric_profiles: { name: string; profile_version: string }[];
-    layers: { name: string }[];
-    rulesets: { name: string }[];
+    layers: { name: string; profile_version: string }[];
     issues?: string[];
     stats?: {
         total_jobs_created: number;
@@ -70,6 +69,7 @@ interface ScanResult {
         type: string;
         containers: { name: string; image: string }[];
         kruizeOptimized: boolean;
+        labels?: Record<string, string>;
     }[];
     deployments?: { // handling fallback
         namespace: string;
@@ -77,16 +77,19 @@ interface ScanResult {
         type: string;
         containers: { name: string; image: string }[];
         kruizeOptimized: boolean;
+        labels?: Record<string, string>;
     }[];
 }
 
 export const Optimizer = () => {
     const [health, setHealth] = useState<HealthStatus | null>(null);
     const [scanData, setScanData] = useState<ScanResult | null>(null);
+    const [diffData, setDiffData] = useState<HealthStatus | null>(null);
     const [showAll, setShowAll] = useState(false);
     const [loadingHealth, setLoadingHealth] = useState(false);
     const [loadingScan, setLoadingScan] = useState(false);
     const [installing, setInstalling] = useState(false);
+    const [updating, setUpdating] = useState(false);
 
     // Table State
     const [nsFilter, setNsFilter] = useState('');
@@ -94,6 +97,7 @@ export const Optimizer = () => {
     const [nsPerPage, setNsPerPage] = useState(10);
 
     const [wlFilter, setWlFilter] = useState('');
+    const [labelFilter, setLabelFilter] = useState('');
     const [wlPage, setWlPage] = useState(1);
     const [wlPerPage, setWlPerPage] = useState(10);
 
@@ -107,6 +111,16 @@ export const Optimizer = () => {
             console.error("Health check failed", e);
         } finally {
             setLoadingHealth(false);
+        }
+    };
+
+    const fetchDiff = async () => {
+        try {
+            const res = await fetch(`${getOptimizerUrl()}/profiles/diff`);
+            const data = await res.json();
+            setDiffData(data);
+        } catch (e) {
+            console.error("Profile diff failed", e);
         }
     };
 
@@ -125,13 +139,13 @@ export const Optimizer = () => {
     };
 
     const installProfiles = async () => {
-        if (!confirm("Attempt to install missing profiles via Kruize API?")) return;
         setInstalling(true);
         try {
             const res = await fetch(`${getOptimizerUrl()}/profiles/install`, { method: 'POST' });
             await res.json();
             alert("Installation process completed. Checking Kruize status...");
             fetchHealth();
+            fetchDiff();
         } catch (e) {
             alert("Installation failed: " + e);
         } finally {
@@ -139,9 +153,40 @@ export const Optimizer = () => {
         }
     };
 
+    const updateProfiles = async () => {
+        if (!diffData) return;
+        if (!confirm("Update profiles to latest versions?")) return;
+        setUpdating(true);
+        try {
+            // Construct body from diffData
+            // Schema: Map<String, List<String>> (e.g. "metadata_profiles": ["profile1", "profile2"])
+            const body: Record<string, string[]> = {};
+
+            if (diffData.metadata_profiles?.length) body['metadata_profiles'] = diffData.metadata_profiles.map(p => p.name);
+            if (diffData.metric_profiles?.length) body['metric_profiles'] = diffData.metric_profiles.map(p => p.name);
+            if (diffData.layers?.length) body['layers'] = diffData.layers.map(p => p.name);
+
+
+            const res = await fetch(`${getOptimizerUrl()}/profiles/update`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            await res.json();
+            alert("Profiles updated successfully.");
+            fetchHealth();
+            fetchDiff();
+        } catch (e) {
+            alert("Update failed: " + e);
+        } finally {
+            setUpdating(false);
+        }
+    };
+
     useEffect(() => {
         fetchHealth();
         fetchWorkloads();
+        fetchDiff();
     }, []);
 
     useEffect(() => {
@@ -158,10 +203,23 @@ export const Optimizer = () => {
     const paginatedNs = filteredNs.slice((nsPage - 1) * nsPerPage, nsPage * nsPerPage);
 
     // Filter & Paginate Workloads
-    const filteredWl = workloads.filter(w =>
-        w.name.toLowerCase().includes(wlFilter.toLowerCase()) ||
-        w.namespace.toLowerCase().includes(wlFilter.toLowerCase())
-    );
+    // Filter & Paginate Workloads
+    const filteredWl = workloads.filter(w => {
+        const matchesText = w.name.toLowerCase().includes(wlFilter.toLowerCase()) ||
+            w.namespace.toLowerCase().includes(wlFilter.toLowerCase());
+
+        let matchesLabel = true;
+        if (labelFilter) {
+            if (!w.labels) matchesLabel = false;
+            else {
+                const search = labelFilter.toLowerCase();
+                const labelStr = Object.entries(w.labels).map(([k, v]) => `${k}=${v}`).join(' ');
+                matchesLabel = labelStr.toLowerCase().includes(search);
+            }
+        }
+
+        return matchesText && matchesLabel;
+    });
     const paginatedWl = filteredWl.slice((wlPage - 1) * wlPerPage, wlPage * wlPerPage);
 
     const renderPagination = (
@@ -206,7 +264,7 @@ export const Optimizer = () => {
                             <Card className="optimizer-card">
                                 <CardTitle>
                                     <Flex justifyContent={{ default: 'justifyContentSpaceBetween' }}>
-                                        <Text component={Text.small} className="pf-u-text-uppercase pf-u-color-200">Last Checked</Text>
+                                        <Text component="small" className="pf-u-text-uppercase pf-u-color-200">Last Checked</Text>
                                         <ClockIcon color="var(--pf-global--primary-color--100)" />
                                     </Flex>
                                 </CardTitle>
@@ -221,7 +279,7 @@ export const Optimizer = () => {
                             <Card className="optimizer-card">
                                 <CardTitle>
                                     <Flex justifyContent={{ default: 'justifyContentSpaceBetween' }}>
-                                        <Text component={Text.small} className="pf-u-text-uppercase pf-u-color-200">Datasources</Text>
+                                        <Text component="small" className="pf-u-text-uppercase pf-u-color-200">Datasources</Text>
                                         <DatabaseIcon color="var(--pf-global--success-color--100)" />
                                     </Flex>
                                 </CardTitle>
@@ -240,7 +298,7 @@ export const Optimizer = () => {
                             <Card className="optimizer-card">
                                 <CardTitle>
                                     <Flex justifyContent={{ default: 'justifyContentSpaceBetween' }}>
-                                        <Text component={Text.small} className="pf-u-text-uppercase pf-u-color-200">Metadata Profiles</Text>
+                                        <Text component="small" className="pf-u-text-uppercase pf-u-color-200">Metadata Profiles</Text>
                                         <FileCodeIcon color="var(--pf-global--info-color--100)" />
                                     </Flex>
                                 </CardTitle>
@@ -263,7 +321,7 @@ export const Optimizer = () => {
                             <Card className="optimizer-card">
                                 <CardTitle>
                                     <Flex justifyContent={{ default: 'justifyContentSpaceBetween' }}>
-                                        <Text component={Text.small} className="pf-u-text-uppercase pf-u-color-200">Metric Profiles</Text>
+                                        <Text component="small" className="pf-u-text-uppercase pf-u-color-200">Metric Profiles</Text>
                                         <ChartLineIcon color="var(--pf-global--warning-color--100)" />
                                     </Flex>
                                 </CardTitle>
@@ -292,7 +350,7 @@ export const Optimizer = () => {
                             <Card className="optimizer-card">
                                 <CardTitle>
                                     <Flex justifyContent={{ default: 'justifyContentSpaceBetween' }}>
-                                        <Text component={Text.small} className="pf-u-text-uppercase pf-u-color-200">Layers</Text>
+                                        <Text component="small" className="pf-u-text-uppercase pf-u-color-200">Layers</Text>
                                         <LayerGroupIcon color="grey" />
                                     </Flex>
                                 </CardTitle>
@@ -307,25 +365,7 @@ export const Optimizer = () => {
                                 </CardBody>
                             </Card>
                         </GridItem>
-                        <GridItem span={6}>
-                            <Card className="optimizer-card">
-                                <CardTitle>
-                                    <Flex justifyContent={{ default: 'justifyContentSpaceBetween' }}>
-                                        <Text component={Text.small} className="pf-u-text-uppercase pf-u-color-200">RuleSets</Text>
-                                        <ListIcon color="black" />
-                                    </Flex>
-                                </CardTitle>
-                                <CardBody>
-                                    <div className="optimizer-list-scrollable">
-                                        {health?.rulesets?.length ? (
-                                            <List isPlain>
-                                                {health.rulesets.map((r, i) => <ListItem key={i}><strong>{r.name}</strong></ListItem>)}
-                                            </List>
-                                        ) : <Text className="pf-u-color-400">Loading...</Text>}
-                                    </div>
-                                </CardBody>
-                            </Card>
-                        </GridItem>
+
                     </Grid>
                 </StackItem>
 
@@ -335,7 +375,7 @@ export const Optimizer = () => {
                         <GridItem span={4}>
                             <Card className="optimizer-card pf-m-active">
                                 <CardBody className="pf-u-text-align-center">
-                                    <Text component={Text.small} className="pf-u-text-uppercase pf-u-color-200">Total Jobs Created</Text>
+                                    <Text component="small" className="pf-u-text-uppercase pf-u-color-200">Total Jobs Created</Text>
                                     <Title headingLevel="h2" size="3xl" className="pf-u-color-primary-100">
                                         {health?.stats?.total_jobs_created || 0}
                                     </Title>
@@ -345,7 +385,7 @@ export const Optimizer = () => {
                         <GridItem span={4}>
                             <Card className="optimizer-card pf-m-active">
                                 <CardBody className="pf-u-text-align-center">
-                                    <Text component={Text.small} className="pf-u-text-uppercase pf-u-color-200">Total Exp. Created</Text>
+                                    <Text component="small" className="pf-u-text-uppercase pf-u-color-200">Total Exp. Created</Text>
                                     <Title headingLevel="h2" size="3xl" className="pf-u-success-color-100">
                                         {health?.stats?.total_experiments_created || 0}
                                     </Title>
@@ -355,7 +395,7 @@ export const Optimizer = () => {
                         <GridItem span={4}>
                             <Card className="optimizer-card pf-m-active">
                                 <CardBody className="pf-u-text-align-center">
-                                    <Text component={Text.small} className="pf-u-text-uppercase pf-u-color-200">Total Exp. Processed</Text>
+                                    <Text component="small" className="pf-u-text-uppercase pf-u-color-200">Total Exp. Processed</Text>
                                     <Title headingLevel="h2" size="3xl" className="pf-u-info-color-100">
                                         {health?.stats?.total_experiments_processed || 0}
                                     </Title>
@@ -375,6 +415,30 @@ export const Optimizer = () => {
                         </Alert>
                     </StackItem>
                 )}
+
+                {/* Profile Updates Alert */}
+                {diffData && (
+                    (diffData.metadata_profiles?.length > 0) ||
+                    (diffData.metric_profiles?.length > 0) ||
+                    (diffData.layers?.length > 0)
+                ) && (
+                        <StackItem>
+                            <Alert
+                                variant="info"
+                                title="Profile Updates Available"
+                                actionLinks={
+                                    <React.Fragment>
+                                        <Button variant="link" onClick={updateProfiles} isLoading={updating}>
+                                            Update Profiles
+                                        </Button>
+                                    </React.Fragment>
+                                }
+                                isInline
+                            >
+                                New versions of profiles are available.
+                            </Alert>
+                        </StackItem>
+                    )}
 
                 {/* Controls */}
                 <StackItem>
@@ -464,6 +528,14 @@ export const Optimizer = () => {
                                             onClear={() => { setWlFilter(''); setWlPage(1); }}
                                         />
                                     </ToolbarItem>
+                                    <ToolbarItem>
+                                        <SearchInput
+                                            placeholder="Filter by Label (key=value)"
+                                            value={labelFilter}
+                                            onChange={(_event, value) => { setLabelFilter(value); setWlPage(1); }}
+                                            onClear={() => { setLabelFilter(''); setWlPage(1); }}
+                                        />
+                                    </ToolbarItem>
                                     <ToolbarItem variant="pagination">
                                         {renderPagination(filteredWl.length, wlPage, wlPerPage, setWlPage, setWlPerPage)}
                                     </ToolbarItem>
@@ -476,6 +548,7 @@ export const Optimizer = () => {
                                         <Th>Namespace</Th>
                                         <Th>Workload</Th>
                                         <Th>Type</Th>
+                                        <Th>Labels</Th>
                                         <Th>Containers</Th>
                                         <Th>Kruize Optimized?</Th>
                                     </Tr>
@@ -486,6 +559,15 @@ export const Optimizer = () => {
                                             <Td>{w.namespace}</Td>
                                             <Td>{w.name}</Td>
                                             <Td>{w.type}</Td>
+                                            <Td>
+                                                {w.labels ?
+                                                    Object.entries(w.labels).map(([k, v]) => (
+                                                        <Label key={k} color="blue" isCompact className="pf-u-mr-xs pf-u-mb-xs">
+                                                            {k}={v}
+                                                        </Label>
+                                                    )) : '-'
+                                                }
+                                            </Td>
                                             <Td>
                                                 <List isPlain>
                                                     {w.containers?.map((c, j) => {

@@ -98,14 +98,14 @@ const routes: AppRouteConfig[] = [
     ],
     menu: false
   },
-  ...(process.env.OPTIMIZER === 'true' ? [{
+  {
     component: Optimizer,
     exact: true,
     label: 'Optimizer',
     path: '/optimizer',
     title: 'Kruize Optimizer',
     menu: true
-  }] : [])
+  }
 ];
 
 
