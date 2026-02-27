@@ -137,16 +137,22 @@ const CostDetails = (props: { recommendedData; currentData; chartData; day; endt
   if (props.experimentType == "namespace") {
     resource_name = "resource quota"
   }
-  const current_code = `${resource_name}: 
-  requests:  
-    cpu: ${NumberFormat(props.currentData[0]?.requests?.cpu?.amount)} 
+  const current_code = `${resource_name}:
+  requests:
+    cpu: ${NumberFormat(props.currentData[0]?.requests?.cpu?.amount)}
     memory: ${MemoryFormat(props.currentData[0]?.requests?.memory?.amount)}
-  limits: 
+  limits:
     cpu: ${NumberFormat(props.currentData[0]?.limits?.cpu?.amount)}
     memory: ${MemoryFormat(props.currentData[0]?.limits?.memory?.amount)}`;
 
-  const recommended_code = `${resource_name}: 
-  requests: 
+  // Format env parameters if they exist
+  const envParams = props.recommendedData[0]?.recommendation_engines?.cost?.config?.env;
+  const envSection = envParams?.length > 0
+    ? '\nenv:\n' + envParams.map(e => `  - name: ${e.name}\n    value: "${e.value}"`).join('\n')
+    : '';
+
+  const recommended_code = `${resource_name}:
+  requests:
     cpu: ${NumberFormat(
       props.recommendedData[0]?.recommendation_engines?.cost?.config?.requests?.cpu?.amount
     )}          # ${NumberFormatP(
@@ -159,7 +165,7 @@ const CostDetails = (props: { recommendedData; currentData; chartData; day; endt
       unitVal,
       mmrUnit
     )}
-  limits:   
+  limits:
     cpu: ${NumberFormat(
       props.recommendedData[0]?.recommendation_engines?.cost?.config?.limits?.cpu?.amount
     )}          # ${NumberFormatP(
@@ -171,7 +177,7 @@ const CostDetails = (props: { recommendedData; currentData; chartData; day; endt
       props.recommendedData[0]?.recommendation_engines?.cost?.variation?.limits?.memory.amount,
       unitVal,
       mmrUnit
-    )}`;
+    )}${envSection}`;
 
   // Notifications
   useEffect(() => {
