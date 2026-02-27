@@ -139,7 +139,7 @@ const RecommendationTables = (props: {
       const recommendationDataNewAPI = item.recommendations?.data[endtime]?.recommendation_terms[day];
       const allRecommData = item.recommendations.data;
       const endTimeSortedKeys = Object.keys(allRecommData).sort();
-            
+
       if (currentData) {
         current_arr.push(currentData);
       }
@@ -162,13 +162,13 @@ const RecommendationTables = (props: {
         }
       }
 
-      if(index == 0) {
+      if (index == 0) {
         const boxPlotData = item.recommendations.data[endtime]?.recommendation_terms[day]?.plots?.plots_data;
         if (boxPlotData) {
           boxPlot_arr.push(boxPlotData);
         }
         console.log(boxPlotData);
-        
+
         endTimeNotifications = item.recommendations.data[endtime].notifications || [];
         termNotifications = item.recommendations.data[endtime].recommendation_terms[day].notifications || [];
       }
@@ -209,10 +209,12 @@ const RecommendationTables = (props: {
       if (recommended_arr[0]?.recommendation_engines) {
         setDisplayChart(true);
       }
-    } else if (experiment_type == "namespace"){
-      setDisplayChart(false);
-      processItem(allData, 0)
-    } 
+    } else if (experiment_type == "namespace") {
+      allData.forEach((item, index) => processItem(item, index));
+      if (recommended_arr[0]?.recommendation_engines) {
+        setDisplayChart(true);
+      }
+    }
   }
   useEffect(() => {
     const fetchData = async () => {
@@ -236,17 +238,17 @@ const RecommendationTables = (props: {
     const { notification } = props;
 
     if (notification && typeof notification === 'object') {
-        const level2 = notification.level2;
-        if (level2 && level2.info) {
-            const notificationKeys = Object.keys(level2.info);
-            const updatedDays = days.filter(day => {
-                if (day.value === 'short_term') return notificationKeys.some(key => level2.info[key].message.includes('Short Term'));
-                if (day.value === 'medium_term') return notificationKeys.some(key => level2.info[key].message.includes('Medium Term'));
-                if (day.value === 'long_term') return notificationKeys.some(key => level2.info[key].message.includes('Long Term'));
-                return false;
-            });
-            setFilteredDays(updatedDays);
-        }
+      const level2 = notification.level2;
+      if (level2 && level2.info) {
+        const notificationKeys = Object.keys(level2.info);
+        const updatedDays = days.filter(day => {
+          if (day.value === 'short_term') return notificationKeys.some(key => level2.info[key].message.includes('Short Term'));
+          if (day.value === 'medium_term') return notificationKeys.some(key => level2.info[key].message.includes('Medium Term'));
+          if (day.value === 'long_term') return notificationKeys.some(key => level2.info[key].message.includes('Long Term'));
+          return false;
+        });
+        setFilteredDays(updatedDays);
+      }
     }
   }, [props.notification]);
 
@@ -277,115 +279,115 @@ const RecommendationTables = (props: {
       })}
     </AlertGroup>
   );
-  
+
   // checking if data is present or not
   const isDataPresent = !props.notification.level1?.hasOwnProperty('120001');
-  
+
   return (
     <>
-    <PageSection variant={PageSectionVariants.light}>
-    <Stack hasGutter>
-      <StackItem>
-        <br />
-        <WorkloadDetails
-          experimentData={{
-            experiment_name: props.SREdata.experiment_name,
-            namespace: props.SREdata.namespace,
-            name: props.SREdata.name,
-            type: props.SREdata.type,
-            cluster_name: props.SREdata.cluster_name,
-            container_name: props.SREdata.container_name,
-            experiment_type: props.SREdata.experiment_type
-          }}
-        />
-      </StackItem>
-      <StackItem>
+      <PageSection variant={PageSectionVariants.light}>
         <Stack hasGutter>
-        {isDataPresent && ( 
-          <Flex className="example-border">
-            <Flex>
-              <FlexItem>
-                <Split hasGutter>
-                  <SplitItem>
-                    <TextContent>
-                      <Text component={TextVariants.p}>Monitoring End Time</Text>
-                    </TextContent>
-                  </SplitItem>
-                  <SplitItem>
-                    <FormSelect
-                      value={endtime}
-                      onChange={(_event, value: string) => onChange(value)}
-                      aria-label="FormSelect Input"
-                      style={{ width: '300px' }}
-                    >
-                      {props.endTimeArray &&
-                        props.endTimeArray.map((option, index) => (
-                          <FormSelectOption key={index} value={option} label={option} />
-                        ))}
-                    </FormSelect>
-                  </SplitItem>
-                </Split>
-              </FlexItem>
-            </Flex>
-            <FlexItem>
-              <Split hasGutter>
-                <SplitItem>
-                  <TextContent>
-                    <Text component={TextVariants.p}>View optimization based on </Text>
-                  </TextContent>
-                </SplitItem>
-                <SplitItem>
-                  <FormSelect
-                    value={day}
-                    onChange={(_event, value: string) => onDayChange(value)}
-                    aria-label="days dropdown"
-                    style={{ width: '150px' }}
-                  >
-                    {filteredDays.map((selection, index) => (
-                      <FormSelectOption key={index} value={selection.value} label={selection.label} />
-                    ))}
-                  </FormSelect>
-                </SplitItem>
-              </Split>
-            </FlexItem>
-          </Flex>
-        )}
-          <Card style={{ width: '800px' }}>
-            {!isDataPresent && (
-              <Flex>
-                <FlexItem spacer={{ default: 'spacer3xl' }}>
-                {props.notification.level1 && renderNotifications(props.notification.level1)}
-                </FlexItem>
-              </Flex>
-            )} 
-            <Flex>
-              <FlexItem spacer={{ default: 'spacer3xl' }}>
-              {props.notification.level2 && renderNotifications(props.notification.level2.info)}
-              </FlexItem>
-              <FlexItem>
-              {props.notification.level2 && renderNotifications(props.notification.level2.others)}
-              </FlexItem>
-            </Flex>
-          </Card>
-          </Stack>
-          </StackItem>
-          </Stack>
-
-          </PageSection>
           <StackItem>
-            {isDataPresent && (
-              <TabSection
-                recommendedData={recommendedData}
-                currentData={currentData}
-                chartData={chartDetailsData}
-                day={day}
-                endtime={endtime}
-                displayChart={displayChart}
-                boxPlotData={boxPlotTranslatedData}
-                experimentType={props.SREdata.experiment_type}
-              />
-            )} 
+            <br />
+            <WorkloadDetails
+              experimentData={{
+                experiment_name: props.SREdata.experiment_name,
+                namespace: props.SREdata.namespace,
+                name: props.SREdata.name,
+                type: props.SREdata.type,
+                cluster_name: props.SREdata.cluster_name,
+                container_name: props.SREdata.container_name,
+                experiment_type: props.SREdata.experiment_type
+              }}
+            />
           </StackItem>
+          <StackItem>
+            <Stack hasGutter>
+              {isDataPresent && (
+                <Flex className="example-border">
+                  <Flex>
+                    <FlexItem>
+                      <Split hasGutter>
+                        <SplitItem>
+                          <TextContent>
+                            <Text component={TextVariants.p}>Monitoring End Time</Text>
+                          </TextContent>
+                        </SplitItem>
+                        <SplitItem>
+                          <FormSelect
+                            value={endtime}
+                            onChange={(_event, value: string) => onChange(value)}
+                            aria-label="FormSelect Input"
+                            style={{ width: '300px' }}
+                          >
+                            {props.endTimeArray &&
+                              props.endTimeArray.map((option, index) => (
+                                <FormSelectOption key={index} value={option} label={option} />
+                              ))}
+                          </FormSelect>
+                        </SplitItem>
+                      </Split>
+                    </FlexItem>
+                  </Flex>
+                  <FlexItem>
+                    <Split hasGutter>
+                      <SplitItem>
+                        <TextContent>
+                          <Text component={TextVariants.p}>View optimization based on </Text>
+                        </TextContent>
+                      </SplitItem>
+                      <SplitItem>
+                        <FormSelect
+                          value={day}
+                          onChange={(_event, value: string) => onDayChange(value)}
+                          aria-label="days dropdown"
+                          style={{ width: '150px' }}
+                        >
+                          {filteredDays.map((selection, index) => (
+                            <FormSelectOption key={index} value={selection.value} label={selection.label} />
+                          ))}
+                        </FormSelect>
+                      </SplitItem>
+                    </Split>
+                  </FlexItem>
+                </Flex>
+              )}
+              <Card style={{ width: '800px' }}>
+                {!isDataPresent && (
+                  <Flex>
+                    <FlexItem spacer={{ default: 'spacer3xl' }}>
+                      {props.notification.level1 && renderNotifications(props.notification.level1)}
+                    </FlexItem>
+                  </Flex>
+                )}
+                <Flex>
+                  <FlexItem spacer={{ default: 'spacer3xl' }}>
+                    {props.notification.level2 && renderNotifications(props.notification.level2.info)}
+                  </FlexItem>
+                  <FlexItem>
+                    {props.notification.level2 && renderNotifications(props.notification.level2.others)}
+                  </FlexItem>
+                </Flex>
+              </Card>
+            </Stack>
+          </StackItem>
+        </Stack>
+
+      </PageSection>
+      <StackItem>
+        {isDataPresent && (
+          <TabSection
+            recommendedData={recommendedData}
+            currentData={currentData}
+            chartData={chartDetailsData}
+            day={day}
+            endtime={endtime}
+            displayChart={displayChart}
+            boxPlotData={boxPlotTranslatedData}
+            experimentType={props.SREdata.experiment_type}
+          />
+        )}
+      </StackItem>
     </>
   );
 };
