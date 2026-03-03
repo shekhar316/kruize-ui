@@ -37,7 +37,7 @@ const CostDetails = (props: { recommendedData; currentData; chartData; day; endt
   // Format env parameters if they exist
   const envParams = props.recommendedData[0]?.recommendation_engines?.cost?.config?.env;
   const envSection = envParams?.length > 0
-    ? '\n  env:\n' + envParams.map(e => `     name: ${e.name}\n      value: "${e.value}"`).join('\n')
+    ? '\n  env:\n' + envParams.map(e => `  - name: ${e.name}\n    value: "${e.value}"`).join('\n')
     : '';
 
   const recommended_code = `resources:

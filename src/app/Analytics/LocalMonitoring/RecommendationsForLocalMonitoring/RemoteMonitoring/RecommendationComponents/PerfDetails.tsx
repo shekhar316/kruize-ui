@@ -64,7 +64,7 @@ const PerfDetails = (props: {
   const envParams = props.recommendedData[0]?.recommendation_engines?.performance?.config?.env;
 
   const envSection = envParams?.length > 0
-    ? '\n  env:\n' + envParams.map(e => `    name: ${e.name}\n    value: "${e.value}"`).join('\n')
+    ? '\n  env:\n' + envParams.map(e => `  - name: ${e.name}\n    value: "${e.value}"`).join('\n')
     : '';
 
   const recommended_code = `${resource_name}:
