@@ -129,8 +129,6 @@ const CostDetails = (props: { recommendedData; currentData; chartData; day; endt
 
   if (nvidiaKey) {
     gpu_val = limits[nvidiaKey]?.amount;
-  } else {
-    console.log("No 'nvidia' key found.");
   }
 
   let resource_name = "resources";
@@ -147,8 +145,9 @@ const CostDetails = (props: { recommendedData; currentData; chartData; day; endt
 
   // Format env parameters if they exist
   const envParams = props.recommendedData[0]?.recommendation_engines?.cost?.config?.env;
+
   const envSection = envParams?.length > 0
-    ? '\nenv:\n' + envParams.map(e => `  - name: ${e.name}\n    value: "${e.value}"`).join('\n')
+    ? '\n  env:\n' + envParams.map(e => `  - name: ${e.name}\n    value: "${e.value}"`).join('\n')
     : '';
 
   const recommended_code = `${resource_name}:
@@ -174,7 +173,7 @@ const CostDetails = (props: { recommendedData; currentData; chartData; day; endt
     memory: ${MemoryFormat(
       props.recommendedData[0]?.recommendation_engines?.cost?.config?.limits?.memory?.amount
     )}      # ${MemoryFormatP(
-      props.recommendedData[0]?.recommendation_engines?.cost?.variation?.limits?.memory.amount,
+      props.recommendedData[0]?.recommendation_engines?.cost?.variation?.limits?.memory?.amount,
       unitVal,
       mmrUnit
     )}${envSection}`;

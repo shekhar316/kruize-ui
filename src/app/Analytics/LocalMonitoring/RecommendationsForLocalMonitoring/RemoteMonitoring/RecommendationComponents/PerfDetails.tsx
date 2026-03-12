@@ -45,8 +45,6 @@ const PerfDetails = (props: {
 
   if (nvidiaKey) {
     gpu_val = limits[nvidiaKey]?.amount;
-  } else {
-    console.log("No 'nvidia' key found.");
   }
 
   let resource_name = "resources";
@@ -64,8 +62,9 @@ const PerfDetails = (props: {
 
   // Format env parameters if they exist
   const envParams = props.recommendedData[0]?.recommendation_engines?.performance?.config?.env;
+
   const envSection = envParams?.length > 0
-    ? '\nenv:\n' + envParams.map(e => `  - name: ${e.name}\n    value: "${e.value}"`).join('\n')
+    ? '\n  env:\n' + envParams.map(e => `  - name: ${e.name}\n    value: "${e.value}"`).join('\n')
     : '';
 
   const recommended_code = `${resource_name}:
@@ -111,7 +110,6 @@ const PerfDetails = (props: {
     if (notifications?.hasOwnProperty(323001)) {
       setShowPerfBoxPlot(false);
     }
-    console.log('perfn', notifications);
     try {
       if (!notifications) {
         console.warn('No notifications found.');
