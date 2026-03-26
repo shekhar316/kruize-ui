@@ -45,8 +45,6 @@ const PerfDetails = (props: {
 
   if (nvidiaKey) {
     gpu_val = limits[nvidiaKey]?.amount;
-  } else {
-    console.log("No 'nvidia' key found.");
   }
 
   let resource_name = "resources";
@@ -54,16 +52,23 @@ const PerfDetails = (props: {
     resource_name = "resource quota"
   }
 
-  const current_code = `${resource_name}: 
-  requests:  
+  const current_code = `${resource_name}:
+  requests:
     cpu: ${NumberFormat(props.currentData[0]?.requests?.cpu?.amount)}
-    memory: ${MemoryFormat(props.currentData[0]?.requests?.memory?.amount)} 
-  limits:  
+    memory: ${MemoryFormat(props.currentData[0]?.requests?.memory?.amount)}
+  limits:
     cpu: ${NumberFormat(props.currentData[0]?.limits?.cpu?.amount)}
     memory: ${MemoryFormat(props.currentData[0]?.limits?.memory?.amount)}`;
 
-  const recommended_code = `${resource_name}: 
-  requests: 
+  // Format env parameters if they exist
+  const envParams = props.recommendedData[0]?.recommendation_engines?.performance?.config?.env;
+
+  const envSection = envParams?.length > 0
+    ? '\n  env:\n' + envParams.map(e => `  - name: ${e.name}\n    value: "${e.value}"`).join('\n')
+    : '';
+
+  const recommended_code = `${resource_name}:
+  requests:
     cpu: ${NumberFormat(
       props.recommendedData[0]?.recommendation_engines?.performance?.config?.requests?.cpu?.amount
     )}          # ${NumberFormatP(
@@ -76,7 +81,7 @@ const PerfDetails = (props: {
       unitVal,
       mmrUnit
     )}
-  limits:    
+  limits:
     cpu: ${NumberFormat(
       props.recommendedData[0]?.recommendation_engines?.performance?.config?.limits?.cpu?.amount
     )}          # ${NumberFormatP(
@@ -88,7 +93,7 @@ const PerfDetails = (props: {
       props.recommendedData[0]?.recommendation_engines?.performance?.variation?.limits?.memory?.amount,
       unitVal,
       mmrUnit
-    )}`;
+    )}${envSection}`;
 
   // Code for Alert / Notifications
 
@@ -105,7 +110,6 @@ const PerfDetails = (props: {
     if (notifications?.hasOwnProperty(323001)) {
       setShowPerfBoxPlot(false);
     }
-    console.log('perfn', notifications);
     try {
       if (!notifications) {
         console.warn('No notifications found.');
