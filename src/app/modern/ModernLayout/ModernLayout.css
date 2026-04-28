@@ -1,0 +1,78 @@
+.modern-page {
+  background: #f3f4f6;
+}
+
+.modern-masthead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modern-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.modern-brand-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.5px;
+}
+
+.modern-header-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.modern-version {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.modern-sidebar {
+  background: white;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+}
+
+.modern-nav {
+  padding: 1rem 0;
+}
+
+.modern-nav-link {
+  display: block;
+  padding: 0.75rem 1.5rem;
+  color: #4b5563;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.modern-nav-link:hover {
+  background: #f3f4f6;
+  color: #667eea;
+  border-left-color: #667eea;
+}
+
+.pf-v5-c-nav__item.pf-m-current .modern-nav-link {
+  background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, transparent 100%);
+  color: #667eea;
+  border-left-color: #667eea;
+  font-weight: 600;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .modern-brand-text {
+    font-size: 1.25rem;
+  }
+}
+
+/* Made with Bob */
