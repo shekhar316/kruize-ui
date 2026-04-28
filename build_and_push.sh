@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BUILD_PARAMS="--pull --no-cache"
-KRUIZE_UI_DOCKER_REPO="kruize/kruize-ui"
+KRUIZE_UI_DOCKER_REPO="rh-ee-shesaxen/kruize-ui"
 KRUIZE_UI_VERSION="$(grep -m1 '"version"' package.json | tr -d ' ' | cut -d: -f2 | tr -d \" | sed 's/,$//')"
 
 if [ -n "$1" ]; then
