@@ -2,12 +2,16 @@ import * as React from 'react';
 import { Route, RouteComponentProps, Switch } from 'react-router-dom';
 import { accessibleRouteChangeHandler } from '@app/utils/utils';
 import { LocalMonitoring } from '@app/Analytics/LocalMonitoring/LocalMonitoring';
-import { RemoteMonitoring } from '@app/Analytics/RemoteMonitoring/RemoteMonitoring';
+import { CreateExperiment } from '@app/Analytics/LocalMonitoring/CreateExperiment';
+import { Monitoring } from '@app/Analytics/LocalMonitoring/RecommendationsForLocalMonitoring/RemoteMonitoring/Monitoring';
 import { NotFound } from '@app/NotFound/NotFound';
 import { useDocumentTitle } from '@app/utils/useDocumentTitle';
 import { LastLocationProvider, useLastLocation } from 'react-router-last-location';
 import { About } from './About/About';
 import { Dashboard } from './modern/Dashboard/Dashboard';
+import { ImportMetadata } from './modern/ImportMetadata/ImportMetadata';
+import { InstalledConfigs } from './modern/InstalledConfigs/InstalledConfigs';
+import { ViewRecommendations } from './modern/ViewRecommendations/ViewRecommendations';
 
 let routeFocusTimer: number;
 export interface IAppRoute {
@@ -42,18 +46,38 @@ const routes: AppRouteConfig[] = [
   {
     component: LocalMonitoring,
     exact: true,
-    label: 'Local Monitoring',
-    path: '/local-monitoring',
-    title: 'Kruize | Local Monitoring',
+    label: 'Explore Cluster',
+    path: '/explore-cluster',
+    title: 'Kruize | Explore Cluster',
     menu: true,
   },
   {
-    component: RemoteMonitoring,
+    component: ViewRecommendations,
     exact: true,
-    label: 'Remote Monitoring',
-    path: '/remote-monitoring',
-    title: 'Kruize | Remote Monitoring',
+    label: 'View Recommendations',
+    path: '/view-recommendations',
+    title: 'Kruize | View Recommendations',
     menu: true,
+  },
+  {
+    component: InstalledConfigs,
+    exact: true,
+    label: 'Installed Configs',
+    path: '/installed-configs',
+    title: 'Kruize | Installed Configs',
+    menu: true,
+  },
+  {
+    component: CreateExperiment,
+    exact: true,
+    path: '/createExperiment',
+    title: 'Kruize | Create Experiment',
+  },
+  {
+    component: Monitoring,
+    exact: true,
+    path: '/listExperiments',
+    title: 'Kruize | Experiment Recommendations',
   },
   {
     component: About,

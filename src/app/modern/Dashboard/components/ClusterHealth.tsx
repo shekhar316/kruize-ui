@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { getClusterMetadataURL } from '@app/CentralConfig';
+import { getDatasourceMetadataURL } from '@app/CentralConfig';
 
 interface ClusterHealthProps {
   datasources: any[];
